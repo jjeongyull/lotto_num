@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Lotto Numbers</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="data.js"></script>
+    <style>
+        .wrap {
+            max-width: 300px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #000;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .numbers {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .numbers div {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            margin: 5px;
+            border: 1px solid #000;
+            border-radius: 50%;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <button id="btn">로또번호 보기</button>
+        <div id="num_area" class="numbers"></div>
+    </div>
+    <script>
+      
+
+        // 함수: 가장 자주 나온 번호 선정
+        function getMostCommonNumbers(data, count = 6) {
+            const numberFrequencies = {};
+            data.forEach(entry => {
+                entry.numArr.forEach(num => {
+                    if (numberFrequencies[num]) {
+                        numberFrequencies[num]++;
+                    } else {
+                        numberFrequencies[num] = 1;
+                    }
+                });
+            });
+
+            return Object.entries(numberFrequencies)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, count)
+                .map(entry => parseInt(entry[0]));
+        }
+
+        // 함수: 로또 번호 생성 (디테일하게 분석)
+        function generatePredictedNumbers(commonNumbers, lines = 5, numbersPerLine = 6) {
+            const predictedNumbers = [];
+            for (let i = 0; i < lines; i++) {
+                const line = [];
+                const availableNumbers = [...commonNumbers]; // 사용 가능한 번호 배열 복사
+                while (line.length < numbersPerLine) {
+                    const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+                    const number = availableNumbers[randomIndex];
+                    line.push(number);
+                    availableNumbers.splice(randomIndex, 1); // 선택된 번호 제거
+                }
+                predictedNumbers.push(line.sort((a, b) => a - b));
+            }
+            return predictedNumbers;
+        }
+
+        // 클릭 이벤트 핸들러
+        $(document).on('click', '#btn', function(){
+            const mostCommonNumbers = getMostCommonNumbers(data);
+            const predictedNumbers = generatePredictedNumbers(mostCommonNumbers);
+
+            console.log('Most Common Numbers:', mostCommonNumbers);
+            console.log('Predicted Numbers:', predictedNumbers);
+
+            // 결과를 화면에 표시
+            const numArea = $('#num_area');
+            numArea.empty(); // 기존 번호 초기화
+
+            predictedNumbers.forEach(line => {
+                const lineDiv = $('<div class="line"></div>');
+                line.forEach(number => {
+                    const numberDiv = $('<div></div>').text(number);
+                    lineDiv.append(numberDiv);
+                });
+                numArea.append(lineDiv);
+            });
+        });
+    </script>
+</body>
+</html>

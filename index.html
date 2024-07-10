@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Lotto Numbers</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="data.js"></script>
+    <style>
+      .wrap {
+            max-width: 300px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #000;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .numbers {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .numbers div {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            margin: 5px;
+            border: 1px solid #000;
+            border-radius: 50%;
+            font-size: 18px;
+        }
+        p{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <button id="btn">로또번호 보기</button>
+        <div id="num_area" class="numbers"></div>
+    </div>
+    <script>
+        function getNumberFrequencies(data) {
+            const numberCounts = {};
+            data.forEach(entry => {
+                entry.numArr.forEach(num => {
+                    if (numberCounts[num]) {
+                        numberCounts[num]++;
+                    } else {
+                        numberCounts[num] = 1;
+                    }
+                });
+            });
+            return numberCounts;
+        }
+
+        function getPairFrequencies(data) {
+            const pairCounts = {};
+            data.forEach(entry => {
+                const pairs = combinations(entry.numArr, 2);
+                pairs.forEach(pair => {
+                    const key = pair.sort((a, b) => a - b).join(',');
+                    if (pairCounts[key]) {
+                        pairCounts[key]++;
+                    } else {
+                        pairCounts[key] = 1;
+                    }
+                });
+            });
+            return pairCounts;
+        }
+
+        function getTripleFrequencies(data) {
+            const tripleCounts = {};
+            data.forEach(entry => {
+                const triples = combinations(entry.numArr, 3);
+                triples.forEach(triple => {
+                    const key = triple.sort((a, b) => a - b).join(',');
+                    if (tripleCounts[key]) {
+                        tripleCounts[key]++;
+                    } else {
+                        tripleCounts[key] = 1;
+                    }
+                });
+            });
+            return tripleCounts;
+        }
+
+        function combinations(arr, k) {
+            const result = [];
+            const f = (prefix, arr) => {
+                if (prefix.length === k) {
+                    result.push(prefix);
+                    return;
+                }
+                for (let i = 0; i < arr.length; i++) {
+                    f(prefix.concat(arr[i]), arr.slice(i + 1));
+                }
+            };
+            f([], arr);
+            return result;
+        }
+
+        function getNumberAverages(data) {
+            const numberSums = {};
+            const numberCounts = {};
+            data.forEach(entry => {
+                entry.numArr.forEach(num => {
+                    if (numberSums[num]) {
+                        numberSums[num] += num;
+                        numberCounts[num]++;
+                    } else {
+                        numberSums[num] = num;
+                        numberCounts[num] = 1;
+                    }
+                });
+            });
+
+            const numberAverages = {};
+            for (const num in numberSums) {
+                numberAverages[num] = numberSums[num] / numberCounts[num];
+            }
+            return numberAverages;
+        }
+
+        function getMostCommonNumbers(numberFrequencies, count = 6) {
+            return Object.entries(numberFrequencies)
+                .sort((a, b) => b[1] - a[1])
+                .map(entry => parseInt(entry[0]));
+        }
+
+        function generatePredictedNumbers(commonNumbers, lines = 5, numbersPerLine = 6) {
+            const predictedNumbers = [];
+            for (let i = 0; i < lines; i++) {
+                const line = [];
+                while (line.length < numbersPerLine) {
+                    const randomIndex = Math.floor(Math.random() * commonNumbers.length);
+                    const number = commonNumbers[randomIndex];
+                    if (!line.includes(number)) {
+                        line.push(number);
+                    }
+                }
+                predictedNumbers.push(line.sort((a, b) => a - b));
+            }
+            return predictedNumbers;
+        }
+
+        $(document).on('click', '#btn', function(){
+            const numberFrequencies = getNumberFrequencies(data);
+            const mostCommonNumbers = getMostCommonNumbers(numberFrequencies);
+
+            const predictedNumbers = generatePredictedNumbers(mostCommonNumbers, 5, 6);
+            $('#num_area').empty();
+            predictedNumbers.forEach(line => {
+                $('#num_area').append('<p>' + line.join(', ') + '</p>');
+            });
+        });
+    </script>
+</body>
+</html>
