@@ -16,19 +16,15 @@
             text-align: center;
         }
         .numbers {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
             margin-top: 10px;
         }
-        .numbers div {
-            width: 50px;
-            height: 50px;
-            line-height: 50px;
-            margin: 5px;
-            border: 1px solid #000;
-            border-radius: 50%;
-            font-size: 18px;
+        p {
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        .line {
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -38,9 +34,7 @@
         <div id="num_area" class="numbers"></div>
     </div>
     <script>
-      
-
-        // 함수: 가장 자주 나온 번호 선정
+        // 가장 자주 나온 번호 선정
         function getMostCommonNumbers(data, count = 6) {
             const numberFrequencies = {};
             data.forEach(entry => {
@@ -55,11 +49,11 @@
 
             return Object.entries(numberFrequencies)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, count)
-                .map(entry => parseInt(entry[0]));
+                .map(entry => parseInt(entry[0]))
+                .slice(0, count);
         }
 
-        // 함수: 로또 번호 생성 (디테일하게 분석)
+        // 예측 번호 생성
         function generatePredictedNumbers(commonNumbers, lines = 5, numbersPerLine = 6) {
             const predictedNumbers = [];
             for (let i = 0; i < lines; i++) {
@@ -81,6 +75,7 @@
             const mostCommonNumbers = getMostCommonNumbers(data);
             const predictedNumbers = generatePredictedNumbers(mostCommonNumbers);
 
+            // 결과를 콘솔에 출력
             console.log('Most Common Numbers:', mostCommonNumbers);
             console.log('Predicted Numbers:', predictedNumbers);
 
@@ -88,15 +83,13 @@
             const numArea = $('#num_area');
             numArea.empty(); // 기존 번호 초기화
 
-            predictedNumbers.forEach(line => {
-                const lineDiv = $('<div class="line"></div>');
-                line.forEach(number => {
-                    const numberDiv = $('<div></div>').text(number);
-                    lineDiv.append(numberDiv);
-                });
-                numArea.append(lineDiv);
+            predictedNumbers.forEach((line, index) => {
+                const lineParagraph = $('<p class="line"></p>');
+                lineParagraph.text(`Line ${index + 1}: ${line.join(', ')}`);
+                numArea.append(lineParagraph);
             });
         });
+
     </script>
 </body>
 </html>
